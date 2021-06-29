@@ -1,3 +1,4 @@
+const http = require("http");
 module.exports = class Route {
   static SPLITER = " ";
   /**
@@ -11,11 +12,18 @@ module.exports = class Route {
   routePattern;
 
   /**
-   * @param {string} routePattern
+   * @type {(req: http.IncomingMessage, res: http.ServerResponse, params: import("./types").IVariables) => void}
    */
-  constructor(routePattern) {
+  handler;
+
+  /**
+   * @param {string} routePattern
+   * @param {(req: http.IncomingMessage, res: http.ServerResponse, params: import("./types").IVariables) => void} handler
+   */
+  constructor(routePattern, handler) {
     this.routePattern;
     this.routePattern = routePattern;
+    this.handler = handler;
   }
 
   /**
@@ -72,5 +80,29 @@ module.exports = class Route {
       if (patternEl !== pathEl) return false;
     }
     return true;
+  }
+
+  /**
+   *
+   * @param {http.IncomingMessage} req
+   * @param {http.ServerResponse} res
+   */
+  entertain(req, res) {
+    if (this.handler) {
+      this.handler(req, res, this.extractParams(req.url));
+      return;
+    }
+
+    for (let route of this.children) {
+      if (route.patternMatchesUrl(req.url)) {
+        const params = route.extractParams(req.url);
+        route.entertain(req, res);
+        console.debug(`entertaining: ${route.routePattern}, params:`, params);
+        return;
+      }
+    }
+
+    res.write("no response");
+    res.end();
   }
 };
