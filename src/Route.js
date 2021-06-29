@@ -33,7 +33,7 @@ module.exports = class Route {
   /**
    * @param {string} url
    */
-  extractVariables(url) {
+  extractParams(url) {
     const path = Route.parseUrl(url);
     const pattern = Route.parseUrl(this.routePattern);
 

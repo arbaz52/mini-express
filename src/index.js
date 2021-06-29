@@ -19,8 +19,8 @@ const handleIncomingRequest = (req, res) => {
   for (let route of routes) {
     if (route.patternMatchesUrl(req.url)) {
       console.debug(
-        `variables for ${route.routePattern} are: `,
-        route.extractVariables(req.url)
+        `params for ${route.routePattern} are: `,
+        route.extractParams(req.url)
       );
     }
   }
