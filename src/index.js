@@ -20,6 +20,10 @@ const routes = [
     res.write("hello");
     res.end();
   }),
+  new Route("/", (_req, res) => {
+    res.write("super secret route");
+    res.end();
+  }),
 ];
 const route = new Route("/");
 route.children = routes;

@@ -73,7 +73,7 @@ module.exports = class Route {
       const pathEl = path[i];
       const patternEl = pattern[i];
 
-      if (!patternEl || !pathEl) return false;
+      if (patternEl === undefined || pathEl === undefined) return false;
 
       if (patternEl[0] === ":") continue;
 
