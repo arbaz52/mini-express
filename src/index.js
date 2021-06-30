@@ -1,33 +1,24 @@
 const http = require("http");
 const Route = require("./Route");
 
-const PORT = 3000;
+const PORT = 3004;
 
-const routes = [
-  new Route("/hello/:name", (req, res, params) => {
-    res.write(`heellloooo ${params.name}`);
+const route = new Route("/", undefined, [
+  new Route("/greet", undefined, [
+    new Route("/:name", (_req, res, params) => {
+      res.write(`greetings ${params.name}`);
+      res.end();
+    }),
+    new Route("/", (_req, res) => {
+      res.write("greetings!");
+      res.end();
+    }),
+  ]),
+  new Route("/", (req, res) => {
+    res.write("root route");
     res.end();
   }),
-  new Route("/goodbye/:who", (req, res) => {
-    res.write("hello");
-    res.end();
-  }),
-  new Route("/hello", (req, res) => {
-    res.write("hello");
-    res.end();
-  }),
-  new Route("/hey", (req, res) => {
-    res.write("hello");
-    res.end();
-  }),
-  new Route("/", (_req, res) => {
-    res.write("super secret route");
-    res.end();
-  }),
-];
-const route = new Route("/");
-route.children = routes;
-
+]);
 /**
  *
  * @param {http.IncomingMessage} req

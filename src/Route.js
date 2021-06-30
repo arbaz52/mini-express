@@ -19,10 +19,12 @@ module.exports = class Route {
   /**
    * @param {string} routePattern
    * @param {(req: http.IncomingMessage, res: http.ServerResponse, params: import("./types").IVariables) => void} handler
+   * @param {Route[]} children
    */
-  constructor(routePattern, handler) {
+  constructor(routePattern, handler, children) {
     this.routePattern;
     this.routePattern = routePattern;
+    this.children = children;
     this.handler = handler;
   }
 
@@ -35,7 +37,8 @@ module.exports = class Route {
     return url
       .replace(new RegExp("/", "g"), Route.SPLITER)
       .trim()
-      .split(Route.SPLITER);
+      .split(Route.SPLITER)
+      .filter((sub) => !!sub);
   }
 
   /**
@@ -75,7 +78,7 @@ module.exports = class Route {
 
       if (patternEl === undefined || pathEl === undefined) return false;
 
-      if (patternEl[0] === ":") continue;
+      if (patternEl[0] === ":" && pathEl !== "") continue;
 
       if (patternEl !== pathEl) return false;
     }
@@ -93,9 +96,25 @@ module.exports = class Route {
       return;
     }
 
+    /**
+     * removing the matched route
+     */
+    const splicedRoute = Route.parseUrl(req.url)
+      .splice(Route.parseUrl(this.routePattern).length)
+      .join("/");
+
+    console.debug({
+      splicedRoute: Route.parseUrl(splicedRoute),
+      reqUrl: Route.parseUrl(req.url),
+      routePattern: this.routePattern,
+    });
+
+    /**
+     * extract params likewise, append parent params too
+     */
     for (let route of this.children) {
-      if (route.patternMatchesUrl(req.url)) {
-        const params = route.extractParams(req.url);
+      if (route.patternMatchesUrl(splicedRoute)) {
+        const params = route.extractParams(splicedRoute);
         route.entertain(req, res);
         console.debug(`entertaining: ${route.routePattern}, params:`, params);
         return;
