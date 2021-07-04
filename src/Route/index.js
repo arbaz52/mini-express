@@ -120,8 +120,5 @@ module.exports = class Route {
         return;
       }
     }
-
-    res.write("no response");
-    res.end();
   }
 };
