@@ -4,20 +4,17 @@ const Route = require("./Route");
 const PORT = 3004;
 
 const route = new Route("/", undefined, [
-  new Route("/greet", undefined, [
-    new Route("/:name", (_req, res, params) => {
-      res.write(`greetings ${params.name}`);
+  new Route("/notes", undefined, [
+    new Route("/:id", (req, res, params) => {
+      console.debug(params);
+      res.write(`fetching note ID: ${params.id}`);
       res.end();
     }),
-    new Route("/", (_req, res) => {
-      res.write("greetings!");
+    new Route("/", (req, res) => {
+      res.write("fetching notes...");
       res.end();
     }),
   ]),
-  new Route("/", (req, res) => {
-    res.write("root route");
-    res.end();
-  }),
 ]);
 /**
  *
