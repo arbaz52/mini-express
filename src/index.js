@@ -24,10 +24,21 @@ const route = new Route(
             res.end();
           },
           [
-            new Route("/leaves", (req, res) => {
-              res.write(`fetching leaves of employee: ${params.employeeId}`);
-              res.end();
-            }),
+            new Route(
+              "/leaves",
+              (req, res, params) => {
+                res.write(`fetching leaves of employee: ${params.employeeId}`);
+                res.end();
+              },
+              [
+                new Route("/:leaveId", (req, res, params) => {
+                  res.write(
+                    `fetching leave: ${params.leaveId} of employee: ${params.employeeId}`
+                  );
+                  res.end();
+                }),
+              ]
+            ),
           ]
         ),
       ]
