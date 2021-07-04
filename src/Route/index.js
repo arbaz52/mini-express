@@ -101,7 +101,7 @@ module.exports = class Route {
 
     const allParams = {
       ...(!!params ? params : {}),
-      ...this.extractParams(splicedRoute),
+      ...this.extractParams(req.url),
     };
 
     console.debug({
@@ -118,7 +118,7 @@ module.exports = class Route {
      */
     for (let route of this.children) {
       if (route.patternMatchesUrl(splicedRoute)) {
-        route.entertain(req, res, allParams);
+        route.entertain({ ...req, url: splicedRoute }, res, allParams);
         console.debug(`child: ${route.routePattern}, params:`, allParams);
         return true;
       }
@@ -130,10 +130,7 @@ module.exports = class Route {
           req.url
         }, with params: ${JSON.stringify(allParams)}`
       );
-      this.fallback(req, res, {
-        ...(!!params ? params : {}),
-        ...this.extractParams(splicedRoute),
-      });
+      this.fallback(req, res, allParams);
       return true;
     }
   }
