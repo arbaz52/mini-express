@@ -24,6 +24,12 @@ const route = new Route(
             res.end();
           },
           [
+            new Route("/token/:tokenId", (req, res, params) => {
+              res.write(
+                `fetching token: ${params.tokenId} of employee: ${params.employeeId}`
+              );
+              res.end();
+            }),
             new Route(
               "/leaves",
               (req, res, params) => {
@@ -31,12 +37,23 @@ const route = new Route(
                 res.end();
               },
               [
-                new Route("/:leaveId", (req, res, params) => {
-                  res.write(
-                    `fetching leave: ${params.leaveId} of employee: ${params.employeeId}`
-                  );
-                  res.end();
-                }),
+                new Route(
+                  "/:leaveId",
+                  (req, res, params) => {
+                    res.write(
+                      `fetching leave: ${params.leaveId} of employee: ${params.employeeId}`
+                    );
+                    res.end();
+                  },
+                  [
+                    new Route("/token/:tokenId", (req, res, params) => {
+                      res.write(
+                        `fetching token: ${params.tokenId} of employee: ${params.employeeId}`
+                      );
+                      res.end();
+                    }),
+                  ]
+                ),
               ]
             ),
           ]
