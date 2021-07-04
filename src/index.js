@@ -6,21 +6,32 @@ const PORT = 3004;
 const route = new Route(
   "/",
   (req, res) => {
-    res.write("Fallback route");
+    res.write("fallback route");
     res.end();
   },
   [
-    new Route("/notes", undefined, [
-      new Route("/:id", (req, res, params) => {
-        console.debug(params);
-        res.write(`fetching note ID: ${params.id}`);
+    new Route(
+      "/employees",
+      (req, res) => {
+        res.write("fetching employees");
         res.end();
-      }),
-      new Route("/", (req, res) => {
-        res.write("fetching notes...");
-        res.end();
-      }),
-    ]),
+      },
+      [
+        new Route(
+          "/:employeeId",
+          (req, res, params) => {
+            res.write(`fetching employee:${params.employeeId} details`);
+            res.end();
+          },
+          [
+            new Route("/leaves", (req, res) => {
+              res.write(`fetching leaves of employee: ${params.employeeId}`);
+              res.end();
+            }),
+          ]
+        ),
+      ]
+    ),
   ]
 );
 /**

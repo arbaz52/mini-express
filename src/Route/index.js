@@ -14,18 +14,18 @@ module.exports = class Route {
   /**
    * @type {(req: http.IncomingMessage, res: http.ServerResponse, params: import("./types").IVariables) => void}
    */
-  handler;
+  fallback;
 
   /**
    * @param {string} routePattern
-   * @param {(req: http.IncomingMessage, res: http.ServerResponse, params: import("./types").IVariables) => void} handler
+   * @param {(req: http.IncomingMessage, res: http.ServerResponse, params: import("./types").IVariables) => void} fallback
    * @param {Route[]} children
    */
-  constructor(routePattern, handler, children) {
+  constructor(routePattern, fallback, children = []) {
     this.routePattern;
     this.routePattern = routePattern;
     this.children = children;
-    this.handler = handler;
+    this.fallback = fallback;
   }
 
   /**
@@ -89,13 +89,9 @@ module.exports = class Route {
    *
    * @param {http.IncomingMessage} req
    * @param {http.ServerResponse} res
+   * @param {import("./types").IVariables} params
    */
-  entertain(req, res) {
-    if (this.handler) {
-      this.handler(req, res, this.extractParams(req.url));
-      return;
-    }
-
+  entertain(req, res, params) {
     /**
      * removing the matched route
      */
@@ -103,10 +99,18 @@ module.exports = class Route {
       .splice(Route.parseUrl(this.routePattern).length)
       .join("/");
 
+    const allParams = {
+      ...(!!params ? params : {}),
+      ...this.extractParams(splicedRoute),
+    };
+
     console.debug({
       splicedRoute: Route.parseUrl(splicedRoute),
       reqUrl: Route.parseUrl(req.url),
       routePattern: this.routePattern,
+      extractedParams: this.extractParams(splicedRoute),
+      givenParams: params,
+      allParams,
     });
 
     /**
@@ -114,11 +118,23 @@ module.exports = class Route {
      */
     for (let route of this.children) {
       if (route.patternMatchesUrl(splicedRoute)) {
-        const params = route.extractParams(splicedRoute);
-        route.entertain(req, res);
-        console.debug(`entertaining: ${route.routePattern}, params:`, params);
-        return;
+        route.entertain(req, res, allParams);
+        console.debug(`child: ${route.routePattern}, params:`, allParams);
+        return true;
       }
+    }
+
+    if (this.fallback) {
+      console.debug(
+        `fallback: ${this.routePattern} for route; ${
+          req.url
+        }, with params: ${JSON.stringify(allParams)}`
+      );
+      this.fallback(req, res, {
+        ...(!!params ? params : {}),
+        ...this.extractParams(splicedRoute),
+      });
+      return true;
     }
   }
 };
